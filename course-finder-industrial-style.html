@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INDUSTRIAL LEARNING SYSTEM - 課程搜尋引擎</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --concrete-dark: #1a1a1a;
+            --concrete-base: #2a2a2a;
+            --concrete-light: #3a3a3a;
+            --metal-dark: #4a4a4a;
+            --metal-light: #6a6a6a;
+            --rust-orange: #d4622f;
+            --rust-bright: #ff6b35;
+            --industrial-yellow: #ffa500;
+            --warning-yellow: #ffcc00;
+            --text-primary: #e0e0e0;
+            --text-secondary: #999999;
+            --text-dim: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--concrete-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Concrete texture background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+                );
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Noise texture */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header with metal plate effect */
+        header {
+            padding: 2rem 0;
+            margin-bottom: 3rem;
+            position: relative;
+            border-bottom: 4px solid var(--metal-dark);
+            box-shadow:
+                0 2px 0 var(--metal-light),
+                0 8px 20px rgba(0, 0, 0, 0.5);
+            animation: slideDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, var(--concrete-light) 0%, var(--concrete-base) 100%);
+            z-index: -1;
+        }
+
+        /* Rivets decoration */
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background-image:
+                radial-gradient(circle at 20px center, var(--metal-light) 3px, transparent 3px),
+                radial-gradient(circle at 60px center, var(--metal-light) 3px, transparent 3px);
+            background-size: 80px 100%;
+            background-repeat: repeat-x;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            font-weight: 400;
+            letter-spacing: 0.3rem;
+            text-align: center;
+            color: var(--text-primary);
+            text-shadow:
+                2px 2px 0 var(--concrete-dark),
+                4px 4px 8px rgba(0, 0, 0, 0.8);
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        h1::before {
+            content: '▌';
+            position: absolute;
+            left: -3rem;
+            color: var(--rust-orange);
+            font-size: 6rem;
+        }
+
+        h1::after {
+            content: '▌';
+            position: absolute;
+            right: -3rem;
+            color: var(--rust-orange);
+            font-size: 6rem;
+        }
+
+        .subtitle {
+            font-family: 'Barlow', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.4rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .subtitle::before {
+            content: '[ ';
+            color: var(--industrial-yellow);
+        }
+
+        .subtitle::after {
+            content: ' ]';
+            color: var(--industrial-yellow);
+        }
+
+        /* Main grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Metal panel sections */
+        .metal-panel {
+            background: linear-gradient(135deg, var(--concrete-base) 0%, var(--concrete-light) 100%);
+            border: 3px solid var(--metal-dark);
+            padding: 2rem;
+            position: relative;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Corner rivets */
+        .metal-panel::before,
+        .metal-panel::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, var(--metal-light) 0%, var(--metal-dark) 70%);
+            border-radius: 50%;
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .metal-panel::before {
+            top: 10px;
+            left: 10px;
+        }
+
+        .metal-panel::after {
+            top: 10px;
+            right: 10px;
+        }
+
+        .search-section {
+            animation: slideInLeft 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.2s both;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .ai-chat-section {
+            animation: slideInRight 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.2s both;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Bottom rivets */
+        .search-section::after,
+        .ai-chat-section::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, var(--metal-light) 0%, var(--metal-dark) 70%);
+            border-radius: 50%;
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+            bottom: 10px;
+            left: 10px;
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            color: var(--industrial-yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--rust-orange);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .section-title::before {
+            content: '■';
+            color: var(--rust-orange);
+            margin-right: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Search box */
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem 1rem 1rem 2.5rem;
+            background: var(--concrete-dark);
+            border: 2px solid var(--metal-dark);
+            border-left: 4px solid var(--rust-orange);
+            color: var(--text-primary);
+            font-family: 'Barlow', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        input[type="text"]::before {
+            content: '▶';
+            position: absolute;
+            left: 1rem;
+            color: var(--rust-orange);
+        }
+
+        input[type="text"]:focus {
+            border-left-width: 6px;
+            border-left-color: var(--industrial-yellow);
+            background: var(--concrete-base);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.1rem;
+        }
+
+        /* Filter buttons */
+        .filter-options {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(180deg, var(--metal-dark) 0%, var(--concrete-base) 100%);
+            border: 2px solid var(--metal-light);
+            border-bottom: 3px solid var(--metal-dark);
+            color: var(--text-primary);
+            font-family: 'Barlow', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            position: relative;
+            box-shadow: 0 4px 0 var(--concrete-dark);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--concrete-dark);
+        }
+
+        .filter-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(180deg, var(--rust-orange) 0%, var(--rust-bright) 100%);
+            border-color: var(--industrial-yellow);
+            color: var(--concrete-dark);
+            box-shadow:
+                0 4px 0 var(--concrete-dark),
+                0 0 20px rgba(255, 107, 53, 0.5);
+        }
+
+        /* Chat window */
+        .chat-window {
+            flex: 1;
+            background: var(--concrete-dark);
+            border: 3px solid var(--metal-dark);
+            border-left: 5px solid var(--rust-orange);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            overflow-y: auto;
+            max-height: 300px;
+            min-height: 300px;
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: var(--concrete-base);
+            border-left: 3px solid var(--metal-light);
+            animation: messageSlide 0.3s ease-out;
+            font-weight: 600;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chat-message.ai {
+            color: var(--industrial-yellow);
+            border-left-color: var(--industrial-yellow);
+        }
+
+        .chat-message.user {
+            color: var(--text-primary);
+            text-align: right;
+            border-left: none;
+            border-right: 3px solid var(--rust-orange);
+        }
+
+        .chat-message::before {
+            font-weight: 800;
+            margin-right: 0.5rem;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .chat-message.ai::before {
+            content: '[SYS]';
+            color: var(--warning-yellow);
+        }
+
+        .chat-message.user::before {
+            content: '[USER]';
+            color: var(--rust-orange);
+        }
+
+        /* Chat input */
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex: 1;
+        }
+
+        .send-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(180deg, var(--rust-bright) 0%, var(--rust-orange) 100%);
+            border: 3px solid var(--industrial-yellow);
+            border-bottom: 4px solid var(--concrete-dark);
+            color: var(--concrete-dark);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 400;
+            letter-spacing: 0.15rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 var(--concrete-dark);
+        }
+
+        .send-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--concrete-dark);
+        }
+
+        .send-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* Courses section */
+        .courses-section {
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Course cards with industrial plate design */
+        .course-card {
+            background: linear-gradient(135deg, var(--concrete-base) 0%, var(--concrete-light) 100%);
+            border: 3px solid var(--metal-dark);
+            border-top: 5px solid var(--rust-orange);
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 6px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Warning stripe decoration */
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--warning-yellow),
+                var(--warning-yellow) 5px,
+                var(--concrete-dark) 5px,
+                var(--concrete-dark) 10px
+            );
+            clip-path: polygon(100% 0, 100% 100%, 0 0);
+            opacity: 0.3;
+        }
+
+        /* Rivets on course cards */
+        .course-card::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, var(--metal-light) 0%, var(--metal-dark) 70%);
+            border-radius: 50%;
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .course-card:hover {
+            transform: translateY(-8px);
+            border-top-width: 8px;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 12px 24px rgba(0, 0, 0, 0.7),
+                0 0 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .course-tag {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: var(--concrete-dark);
+            border: 2px solid var(--rust-orange);
+            border-left: 4px solid var(--rust-orange);
+            color: var(--rust-orange);
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .course-tag.online {
+            border-color: var(--industrial-yellow);
+            color: var(--industrial-yellow);
+            border-left-color: var(--industrial-yellow);
+        }
+
+        .course-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .course-provider {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            margin-bottom: 1rem;
+        }
+
+        .course-provider::before {
+            content: '▸ ';
+            color: var(--rust-orange);
+        }
+
+        .course-description {
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .course-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 2px solid var(--metal-dark);
+        }
+
+        .course-price {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--industrial-yellow);
+            font-size: 1.5rem;
+            letter-spacing: 0.1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .enroll-btn {
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(180deg, var(--metal-dark) 0%, var(--concrete-base) 100%);
+            border: 2px solid var(--metal-light);
+            border-bottom: 3px solid var(--concrete-dark);
+            color: var(--text-primary);
+            font-family: 'Barlow', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            box-shadow: 0 3px 0 var(--concrete-dark);
+        }
+
+        .enroll-btn:hover {
+            background: linear-gradient(180deg, var(--rust-orange) 0%, var(--rust-bright) 100%);
+            border-color: var(--industrial-yellow);
+            color: var(--concrete-dark);
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 var(--concrete-dark);
+        }
+
+        .enroll-btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        /* Roadmap section */
+        .roadmap-section {
+            margin-top: 4rem;
+            background: linear-gradient(135deg, var(--concrete-base) 0%, var(--concrete-light) 100%);
+            border: 3px solid var(--metal-dark);
+            border-top: 6px solid var(--industrial-yellow);
+            padding: 2rem;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 8px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+            position: relative;
+        }
+
+        /* Industrial grid pattern overlay */
+        .roadmap-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(255, 255, 255, 0.02) 20px,
+                    rgba(255, 255, 255, 0.02) 21px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(255, 255, 255, 0.02) 20px,
+                    rgba(255, 255, 255, 0.02) 21px
+                );
+            pointer-events: none;
+        }
+
+        .roadmap-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Heavy metal pipeline connector */
+        .roadmap-container::before {
+            content: '';
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            right: 50px;
+            height: 8px;
+            background: linear-gradient(180deg, var(--metal-dark) 0%, var(--concrete-dark) 50%, var(--metal-dark) 100%);
+            border-top: 2px solid var(--metal-light);
+            border-bottom: 2px solid var(--concrete-dark);
+            box-shadow:
+                inset 0 3px 6px rgba(0, 0, 0, 0.5),
+                0 4px 8px rgba(0, 0, 0, 0.4);
+            z-index: 0;
+        }
+
+        .roadmap-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Industrial numbered plates */
+        .roadmap-node {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--concrete-light) 0%, var(--concrete-base) 100%);
+            border: 4px solid var(--metal-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: var(--rust-orange);
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.1),
+                0 6px 16px rgba(0, 0, 0, 0.6);
+            transition: all 0.2s ease;
+            position: relative;
+            clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
+        }
+
+        /* Bolt holes in corners */
+        .roadmap-node::before,
+        .roadmap-node::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, var(--metal-light) 0%, var(--metal-dark) 70%);
+            border-radius: 50%;
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
+        }
+
+        .roadmap-node::before {
+            top: 8px;
+            left: 8px;
+        }
+
+        .roadmap-node::after {
+            bottom: 8px;
+            right: 8px;
+        }
+
+        .roadmap-step:nth-child(2) .roadmap-node {
+            border-color: var(--rust-orange);
+            color: var(--industrial-yellow);
+        }
+
+        .roadmap-step:nth-child(3) .roadmap-node {
+            border-color: var(--industrial-yellow);
+            color: var(--warning-yellow);
+        }
+
+        .roadmap-step:nth-child(4) .roadmap-node {
+            border-color: var(--warning-yellow);
+            color: var(--text-primary);
+        }
+
+        .roadmap-node:hover {
+            transform: scale(1.1);
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.1),
+                0 8px 24px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(255, 165, 0, 0.4);
+        }
+
+        .roadmap-label {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .roadmap-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 3.5rem;
+            }
+
+            h1::before,
+            h1::after {
+                display: none;
+            }
+
+            .roadmap-container {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .roadmap-container::before {
+                width: 8px;
+                height: calc(100% - 100px);
+                left: 50px;
+                right: auto;
+                top: 50px;
+            }
+
+            .roadmap-step {
+                text-align: left;
+                padding-left: 140px;
+            }
+
+            .roadmap-node {
+                position: absolute;
+                left: 0;
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+                letter-spacing: 0.2rem;
+            }
+
+            .subtitle {
+                font-size: 0.8rem;
+                letter-spacing: 0.2rem;
+            }
+
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-options {
+                flex-direction: column;
+            }
+
+            .filter-btn {
+                width: 100%;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--metal-dark);
+            border-radius: 2px;
+            border-top-color: var(--rust-orange);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>INDUSTRIAL LEARNING</h1>
+            <div class="subtitle">Course Search System v3.2</div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Search Section -->
+            <div class="metal-panel search-section">
+                <h2 class="section-title">課程搜尋</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="輸入課程關鍵字...">
+                </div>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="online">線上課程</button>
+                    <button class="filter-btn" data-filter="offline">實體課程</button>
+                    <button class="filter-btn" data-filter="free">免費</button>
+                </div>
+            </div>
+
+            <!-- AI Chat Section -->
+            <div class="metal-panel ai-chat-section">
+                <h2 class="section-title">AI 學習顧問</h2>
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-message ai">您好！我是工業學習系統 AI 顧問。請告訴我您的學習目標，我會為您推薦合適的課程和學習路徑。</div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="例如：我想學習 Web 開發...">
+                    <button class="send-btn" id="sendBtn">傳送</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses Section -->
+        <section class="courses-section">
+            <h2 class="section-title">推薦課程</h2>
+            <div class="courses-grid" id="coursesGrid">
+                <!-- Course cards will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Roadmap Section -->
+        <section class="roadmap-section">
+            <h2 class="section-title">學習路徑規劃</h2>
+            <div class="roadmap-container">
+                <div class="roadmap-step">
+                    <div class="roadmap-node">01</div>
+                    <div class="roadmap-label">基礎建立</div>
+                    <div class="roadmap-description">學習基本概念與工具</div>
+                </div>
+                <div class="roadmap-step">
+                    <div class="roadmap-node">02</div>
+                    <div class="roadmap-label">進階實作</div>
+                    <div class="roadmap-description">深入專案開發</div>
+                </div>
+                <div class="roadmap-step">
+                    <div class="roadmap-node">03</div>
+                    <div class="roadmap-label">專業提升</div>
+                    <div class="roadmap-description">掌握進階技術</div>
+                </div>
+                <div class="roadmap-step">
+                    <div class="roadmap-node">04</div>
+                    <div class="roadmap-label">專家認證</div>
+                    <div class="roadmap-description">取得專業證照</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Sample course data
+        const coursesData = [
+            {
+                id: 1,
+                title: 'Full Stack Web Development',
+                provider: 'TechAcademy',
+                type: 'online',
+                description: '從零開始學習前端到後端的完整網頁開發技術，包含 React、Node.js 和資料庫設計。',
+                price: 'NT$ 12,800',
+                category: 'web'
+            },
+            {
+                id: 2,
+                title: 'AI 機器學習實戰',
+                provider: 'DataScience Pro',
+                type: 'offline',
+                description: '深入學習機器學習演算法，並透過實際案例掌握 Python 與 TensorFlow 應用。',
+                price: 'NT$ 18,500',
+                category: 'ai'
+            },
+            {
+                id: 3,
+                title: 'UI/UX 設計思維',
+                provider: 'Design Studio',
+                type: 'online',
+                description: '學習使用者體驗設計的核心概念，從用戶研究到原型設計的完整流程。',
+                price: '免費',
+                category: 'design'
+            },
+            {
+                id: 4,
+                title: 'Python 資料分析',
+                provider: 'Code Masters',
+                type: 'online',
+                description: '掌握 Python 資料分析工具，包含 Pandas、NumPy 和資料視覺化技術。',
+                price: 'NT$ 8,900',
+                category: 'data'
+            },
+            {
+                id: 5,
+                title: 'iOS App 開發',
+                provider: 'Mobile Dev Institute',
+                type: 'offline',
+                description: '學習使用 Swift 開發 iOS 應用程式，從基礎到上架 App Store。',
+                price: 'NT$ 15,000',
+                category: 'mobile'
+            },
+            {
+                id: 6,
+                title: '區塊鏈技術入門',
+                provider: 'Blockchain Academy',
+                type: 'online',
+                description: '了解區塊鏈的核心原理，學習智能合約開發與 DApp 應用。',
+                price: 'NT$ 9,800',
+                category: 'blockchain'
+            }
+        ];
+
+        // Render courses
+        function renderCourses(courses) {
+            const grid = document.getElementById('coursesGrid');
+            grid.innerHTML = courses.map(course => `
+                <div class="course-card" data-type="${course.type}">
+                    <div class="course-tag ${course.type}">${course.type === 'online' ? '線上' : '實體'}</div>
+                    <h3 class="course-title">${course.title}</h3>
+                    <div class="course-provider">${course.provider}</div>
+                    <p class="course-description">${course.description}</p>
+                    <div class="course-footer">
+                        <div class="course-price">${course.price}</div>
+                        <button class="enroll-btn">查看詳情</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initial render
+        renderCourses(coursesData);
+
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+                let filtered = coursesData;
+
+                if (filter === 'online' || filter === 'offline') {
+                    filtered = coursesData.filter(c => c.type === filter);
+                } else if (filter === 'free') {
+                    filtered = coursesData.filter(c => c.price === '免費');
+                }
+
+                renderCourses(filtered);
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = coursesData.filter(course =>
+                course.title.toLowerCase().includes(searchTerm) ||
+                course.description.toLowerCase().includes(searchTerm) ||
+                course.provider.toLowerCase().includes(searchTerm)
+            );
+            renderCourses(filtered);
+        });
+
+        // AI Chat functionality
+        const chatWindow = document.getElementById('chatWindow');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        const aiResponses = {
+            'web': '根據您對 Web 開發的興趣，我推薦您從「Full Stack Web Development」課程開始。學習路徑：基礎 HTML/CSS → JavaScript → React → Node.js → 資料庫。預計 6-8 個月可以完成整個學習路徑。',
+            'ai': '機器學習是個很棒的選擇！建議您先從 Python 基礎開始，然後學習「Python 資料分析」，最後進階到「AI 機器學習實戰」。這個路徑會幫助您建立扎實的基礎。',
+            'design': 'UI/UX 設計需要理論與實作並重。推薦您從「UI/UX 設計思維」課程開始，學習用戶研究、資訊架構、原型設計等核心技能。建議搭配實際專案練習。',
+            'default': '我了解您的需求。根據目前的課程資料，我建議您可以先明確您的學習目標，例如：Web 開發、AI、設計、資料分析等領域。這樣我可以為您規劃更精確的學習路徑！'
+        };
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user' : 'ai'}`;
+            messageDiv.textContent = text;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function getAIResponse(userMessage) {
+            const lowercaseMsg = userMessage.toLowerCase();
+
+            if (lowercaseMsg.includes('web') || lowercaseMsg.includes('網頁') || lowercaseMsg.includes('前端') || lowercaseMsg.includes('後端')) {
+                return aiResponses.web;
+            } else if (lowercaseMsg.includes('ai') || lowercaseMsg.includes('機器學習') || lowercaseMsg.includes('人工智慧')) {
+                return aiResponses.ai;
+            } else if (lowercaseMsg.includes('設計') || lowercaseMsg.includes('ui') || lowercaseMsg.includes('ux')) {
+                return aiResponses.design;
+            } else {
+                return aiResponses.default;
+            }
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            chatInput.value = '';
+
+            // Simulate AI thinking
+            setTimeout(() => {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'chat-message ai';
+                loadingDiv.innerHTML = '處理中... <span class="loading"></span>';
+                chatWindow.appendChild(loadingDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                setTimeout(() => {
+                    chatWindow.removeChild(loadingDiv);
+                    const response = getAIResponse(message);
+                    addMessage(response);
+                }, 1500);
+            }, 500);
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
